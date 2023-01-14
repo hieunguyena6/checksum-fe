@@ -30,8 +30,6 @@ export default function CheckFile() {
   };
 
   const renderFileCheckResult = useMemo(() => {
-    // console.log(fetchFileQuery)
-    // if (fetchFileQuery.isFetching) return "Loading...";
     if (fetchFileQuery.isFetched) {
       const fileData = fetchFileQuery.data?.data?.data;
       if (!fileData) {
