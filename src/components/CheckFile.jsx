@@ -90,7 +90,7 @@ export default function CheckFile() {
         </Upload.Dragger>
         <br />
         <br />
-        <Alert message={renderFileCheckResult} />
+        {renderFileCheckResult && <Alert message={renderFileCheckResult} />}
       </Card>
     </Col>
   );

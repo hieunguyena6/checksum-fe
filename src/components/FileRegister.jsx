@@ -77,7 +77,7 @@ export default function FileRegister() {
         </Upload.Dragger>
         <br />
         <br />
-        <Alert message={registerMessage} />
+        {registerMessage && <Alert message={registerMessage} />}
       </Card>
     </Col>
   );
