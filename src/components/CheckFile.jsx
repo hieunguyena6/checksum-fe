@@ -1,37 +1,53 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Button, Col, Typography, Card, Upload, Alert } from "antd";
+import React, { useMemo, useState } from "react";
+import { Button, Col, Typography, Card, Upload, Alert, notification } from "antd";
 import crypto from "crypto-js";
-import { useQuery } from "react-query";
 import { getFileByChecksum } from "../utils/service";
 import dayjs from "dayjs";
 
 export default function CheckFile() {
-  const [fileCheckChecksum, setFileCheckChecksum] = useState(null);
-
-  const fetchFileQuery = useQuery(
-    ["checksum", fileCheckChecksum],
-    () => getFileByChecksum(fileCheckChecksum),
-    {
-      staleTime: Infinity,
-      enabled: !!fileCheckChecksum,
-    }
-  );
+  // const [fileCheckChecksum, setFileCheckChecksum] = useState(null);
+  const [fileFetchingDetails, setFileFetchingDetails] = useState({
+    isFetching: false,
+    isFetched: null,
+    data: null
+  });
 
   const handleCheckFile = (info) => {
     const file = info.file;
     const reader = new FileReader();
-
+    setFileFetchingDetails({
+      isFetching: true,
+      isFetched: false,
+      data: null
+    })
     reader.onload = async function (event) {
       const binary = event.target.result;
       const md5 = crypto.MD5(binary).toString();
-      setFileCheckChecksum(md5);
+      try {
+        const response = await getFileByChecksum(md5);
+        setFileFetchingDetails({
+          isFetching: false,
+          isFetched: true,
+          data: response.data?.data
+        })
+      } catch (error) {
+        notification.error({
+          message: 'Check failed! Please try again later'
+        })
+        setFileFetchingDetails({
+          isFetching: false,
+          isFetched: true,
+          data: null
+        })
+      }
     };
     reader.readAsBinaryString(file);
   };
 
   const renderFileCheckResult = useMemo(() => {
-    if (fetchFileQuery.isFetched) {
-      const fileData = fetchFileQuery.data?.data?.data;
+    if (fileFetchingDetails.isFetching) return 'Loading...'
+    if (fileFetchingDetails.isFetched) {
+      const fileData = fileFetchingDetails.data;
       if (!fileData) {
         return `This file's fingerprinted haven't uploaded to the server before yet !`;
       } else {
@@ -51,7 +67,7 @@ export default function CheckFile() {
         );
       }
     }
-  }, [fetchFileQuery]);
+  }, [fileFetchingDetails]);
 
   return (
     <Col xl={12} xs={24} style={{ textAlign: "center" }}>
